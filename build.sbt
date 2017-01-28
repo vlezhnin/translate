@@ -13,7 +13,8 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "com.twitter" %% "finatra-http" % "2.2.0",
-  "ch.qos.logback" % "logback-classic" % "1.1.7"
+  "ch.qos.logback" % "logback-classic" % "1.1.7",
+    "net.ruippeixotog" %% "scala-scraper" % "1.2.0"
 )
 
 enablePlugins(JavaAppPackaging)
