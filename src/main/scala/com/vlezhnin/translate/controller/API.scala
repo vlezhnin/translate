@@ -14,6 +14,10 @@ class API extends Controller {
 
   val danskOrdbogClient: Service[Request, Response] = Http.client.newService("ordnet.dk:80")
 
+  get("/rest/version") { request: Request =>
+    "0.0.1"
+  }
+
   post("/rest/translate") { request: Request =>
     val text: String = request.getParam("text")
     println(s"Request received with query $text")
@@ -31,9 +35,17 @@ class API extends Controller {
 
   post("/rest/ordnet") { request: Request =>
     val text: String = request.getParam("text")
-    println(s"Request to ordnet received with query $text")
+    val link: String = request.getParam("link")
+    println(s"Request to ordnet received with query $text, link $link")
 
-    val danskOrdbogRequest = Request(com.twitter.finagle.http.Method.Get, "/ddo/ordbog/?query=" + text)
+    val danskOrdbogRequest =
+    if (link != null && !link.trim.isEmpty) {
+      val queryPart = link.substring(link.indexOf('?'))
+      Request(com.twitter.finagle.http.Method.Get, s"/ddo/ordbog/$queryPart")
+    } else {
+      Request(com.twitter.finagle.http.Method.Get, s"/ddo/ordbog/?query=$text")
+    }
+
     danskOrdbogRequest.host = "ordnet.dk"
 
     val danskOrdbogResponse: Future[Response] = danskOrdbogClient(danskOrdbogRequest)

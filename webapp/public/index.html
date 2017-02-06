@@ -1,0 +1,64 @@
+<html>
+<head>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body>
+
+<div class="container" style="margin-top: 10px;">
+  <div class="row">
+
+    <div class="input-field col s10">
+      <input id="text" placeholder="enter your text" type="text" style="font-size: 16px;" autocapitalize="off" autocorrect="off" onkeydown = "if (event.keyCode == 13) document.getElementById('submit').click()"/>
+    </div>
+
+    <div class="col s2">
+      <button id="submit" class="btn-floating waves-effect waves-light" type="submit" style="margin-top: 10px;" name="action">
+        <i class="material-icons" style="font-size: 17px;">send</i>
+      </button>
+    </div>
+    <div class="col s12">
+      <a class="waves-effect waves-light btn-flat btn-clear" style="padding: 0; margin-top:-20px; color: darkgray;"><i class="material-icons left">clear</i>clear</a>
+    </div>
+  </div>
+
+
+  <div class="row translate-results">
+  </div>
+
+
+  <div class="row">
+    <div class="col s12 separate-words">
+
+    </div>
+  </div>
+
+  <div class="row ">
+    <div class="col s12 translate-word-type">
+    </div>
+  </div>
+
+  <div class="row ">
+    <div class="col s12 article">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12">
+      <ul class="collection meanings">
+
+      </ul>
+    </div>
+  </div>
+
+  <div id="version"></div>
+
+</div>
+</body>
+</html>
+
+
+
+
