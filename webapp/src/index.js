@@ -38,80 +38,58 @@ $(document).ready(function() {
 				});
 			});
 
+		let separateWordsArea = $('.separate-words');
+		separateWordsArea.empty();
 		let words = text.trim().split(/[\s]+/);
-		let separateWords = $('.separate-words');
-		separateWords.empty();
-		console.log(words);
-		words.forEach(word => {
-			separateWords.append(`<a class="word waves-effect waves-light btn" style="margin-right:5px; margin-top: 5px;">${word}</a>`)
-		});
+		if (words.length === 1 || (words.length === 2 && words[0].toLowerCase() === 'at')) {
 
-		$('.word').off();
-		$('.word').dblclick((event) => {
-			let word = event.target.innerText;
-			$('#text').val(word);
-			$('#submit').click();
-		});
+			//if one word - show article
+			searchOrdnetArticle(words[words.length - 1]);
+		} else {
+			words.forEach(word => {
+				separateWordsArea.append(`<a class="word waves-effect waves-light btn" style="margin-right:5px; margin-top: 5px;">${word}</a>`)
+			});
+			$('.word').click((event) => {
+				article.empty();
+				meanings.empty();
+				translateWordType.empty();
+				let word = event.target.innerText;
+				searchOrdnetArticle(word);
+			});
+		}
 
-		$('.word').click((event) => {
-			let word = event.target.innerText;
-			translateWordType.empty();
-			article.empty();
-			meanings.empty();
-			$.ajax('/rest/ordnet', {
-				'data': 'text='+word,
-				'type': 'POST',
-				'processData': false
-			})
-				.done(function(data) {
+	});
 
-					data.options.forEach(option => {
-						translateWordType.append(`<div class="chip word-type">
-							<input type="hidden" value="${option.link}">
-							${option.text}
-						</div>`)
-					});
+	function searchOrdnetArticle(word) {
+		$.ajax('/rest/ordnet', {
+			'data': 'text='+word,
+			'type': 'POST',
+			'processData': false
+		})
+		.done(function(data) {
 
-					$('.word-type').off().click((event) => {
-						article.empty();
-						meanings.empty();
-						$.ajax('/rest/ordnet', {
-							'data': 'link=' + encodeURIComponent(event.target.children[0].value),
-							'type': 'POST',
-							'processData': false
-						}).done((data) => {
-							if (data.article) {
-								if (data.article.wordType) {
-									article.append(`<span class="left badge new blue" data-badge-caption="${data.article.wordType}"></span>`)
-								}
+			data.options.forEach(option => {
+				translateWordType.append(`<div class="chip word-type">
+						<input type="hidden" value="${option.link}">
+						${option.text}
+					</div>`)
+			});
 
-								if (data.article.bending) {
-									article.append(`<span class="left badge new blue" data-badge-caption="${data.article.bending}"></span>`)
-								}
-
-								if (data.article.meanings) {
-									meanings.show();
-									data.article.meanings.forEach(meaning => {
-										meanings.append(`<li class="collection-item meaning">${meaning}</li>`)
-									});
-									$('.meaning').off().click((event) => {
-										$('#text').val(event.target.innerText);
-										$('#submit').click();
-									});
-								}
-
-
-							}
-						})
-					});
-
+			$('.word-type').off().click((event) => {
+				article.empty();
+				meanings.empty();
+				$.ajax('/rest/ordnet', {
+					'data': 'link=' + encodeURIComponent(event.target.children[0].value),
+					'type': 'POST',
+					'processData': false
+				}).done((data) => {
 					if (data.article) {
 						if (data.article.wordType) {
 							article.append(`<span class="left badge new blue" data-badge-caption="${data.article.wordType}"></span>`)
 						}
 
 						if (data.article.bending) {
-							article.append(`<span class="left badge new blue" data-badge-caption="${data.article.bending}"></span>`)
+							article.append(`<span class="left new blue" style="color: white; margin-left: 10px; padding: 0 6px; font-weight: 300; border-radius: 2px;">${data.article.bending}</span>`)
 						}
 
 						if (data.article.meanings) {
@@ -124,14 +102,35 @@ $(document).ready(function() {
 								$('#submit').click();
 							});
 						}
+
+
 					}
+				})
+			});
 
-				});
+			if (data.article) {
+				if (data.article.wordType) {
+					article.append(`<span class="left badge new blue" data-badge-caption="${data.article.wordType}"></span>`)
+				}
+
+				if (data.article.bending) {
+					article.append(`<span class="left new blue" style="color: white; margin-left: 10px; padding: 0 6px; font-weight: 300; border-radius: 2px;">${data.article.bending}</span>`)
+				}
+
+				if (data.article.meanings) {
+					meanings.show();
+					data.article.meanings.forEach(meaning => {
+						meanings.append(`<li class="collection-item meaning">${meaning}</li>`)
+					});
+					$('.meaning').off().click((event) => {
+						$('#text').val(event.target.innerText);
+						$('#submit').click();
+					});
+				}
+			}
+
 		});
-
-
-
-	});
+	}
 
 	$('.btn-clear').click(() => {
 		$('#text').val('');
