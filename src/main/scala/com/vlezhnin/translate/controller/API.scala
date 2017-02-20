@@ -17,7 +17,7 @@ class API extends Controller {
   val danskOrdbogClient: Service[Request, Response] = Http.client.newService("ordnet.dk:80")
 
   get("/rest/version") { request: Request =>
-    "0.0.1"
+    "0.0.2"
   }
 
   post("/rest/translate") { request: Request =>
@@ -26,10 +26,10 @@ class API extends Controller {
     println(s"Request received with query $text")
 
     val yandexRequestEn = Request(com.twitter.finagle.http.Method.Get, s"/api/v1.5/tr.json/translate?key=$YANDEX_API_KEY&lang=da-en&text=$text")
-    val yandexRequestRu = Request(com.twitter.finagle.http.Method.Get, s"/api/v1.5/tr.json/translate?key=$YANDEX_API_KEY&lang=da-$secondLang&text=$text")
+    val yandexRequestSecond = Request(com.twitter.finagle.http.Method.Get, s"/api/v1.5/tr.json/translate?key=$YANDEX_API_KEY&lang=da-$secondLang&text=$text")
 
     val yandexResponseEn: Future[Response] = yandexApiClient(yandexRequestEn)
-    val yandexResponseRu: Future[Response] = yandexApiClient(yandexRequestRu)
+    val yandexResponseRu: Future[Response] = yandexApiClient(yandexRequestSecond)
 
     val futures: Future[Seq[Response]] = Future.collect(List(yandexResponseEn, yandexResponseRu))
 

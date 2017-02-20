@@ -1,14 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Version from './App';
+import LanguageSelect from './LanguageSelect';
 import './index.css';
 import $ from 'jquery';
 import 'react-materialize'
 
-ReactDOM.render(
-  <Version />,
-  document.getElementById('version')
-);
+ReactDOM.render(<Version />, document.getElementById('version'));
+ReactDOM.render(<LanguageSelect />, document.querySelector('.language-select'));
 
 $(document).ready(function() {
 	let translateResults = $('.translate-results');
@@ -26,8 +25,10 @@ $(document).ready(function() {
 		meanings.hide();
 
 		const text = $('#text').val();
+		// TODO read properly from app state
+		let secondLanguage = localStorage.getItem('language');
 		$.ajax('/rest/translate', {
-			'data': 'text='+text,
+			'data': `text=${text};lang=${secondLanguage}`,
 			'type': 'POST',
 			'processData': false
 		})
@@ -68,12 +69,14 @@ $(document).ready(function() {
 		})
 		.done(function(data) {
 
-			data.options.forEach(option => {
-				translateWordType.append(`<div class="chip word-type">
+			if (data.options && data.options.length > 1) {
+				data.options.forEach(option => {
+					translateWordType.append(`<div class="chip word-type">
 						<input type="hidden" value="${option.link}">
 						${option.text}
 					</div>`)
-			});
+				});
+			}
 
 			$('.word-type').off().click((event) => {
 				article.empty();
@@ -85,7 +88,7 @@ $(document).ready(function() {
 				}).done((data) => {
 					if (data.article) {
 						if (data.article.wordType) {
-							article.append(`<span class="left badge new blue" data-badge-caption="${data.article.wordType}"></span>`)
+							article.append(`<span class="left new blue" style="color: white; margin-left: 10px; padding: 0 6px; font-weight: 300; border-radius: 2px;">${data.article.wordType}</span>`)
 						}
 
 						if (data.article.bending) {
@@ -110,7 +113,7 @@ $(document).ready(function() {
 
 			if (data.article) {
 				if (data.article.wordType) {
-					article.append(`<span class="left badge new blue" data-badge-caption="${data.article.wordType}"></span>`)
+					article.append(`<span class="left new blue" style="color: white; margin-left: 10px; padding: 0 6px; font-weight: 300; border-radius: 2px;">${data.article.wordType}</span>`)
 				}
 
 				if (data.article.bending) {
