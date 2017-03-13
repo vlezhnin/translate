@@ -1,27 +1,83 @@
 package com.vlezhnin.translate.controller
 
+import java.util.{Collections, Date}
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload
+import com.google.api.client.googleapis.auth.oauth2.{GoogleIdToken, GoogleIdTokenVerifier}
+import com.google.api.client.http.HttpTransport
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.jackson2.JacksonFactory
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Http, Service}
 import com.twitter.finatra.http.Controller
 import com.twitter.util.Future
+import com.typesafe.config.{Config, ConfigFactory}
+import com.vlezhnin.translate.model.User
+import com.vlezhnin.translate.service.{HistoryService, UserService}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 
-class API extends Controller {
+import scala.concurrent.ExecutionContext.Implicits.global
 
-  val YANDEX_API_KEY = "trnsl.1.1.20161026T190949Z.7010d055d88c34c4.068b7c9f6a931ea34df15a6f7f6660a24ba36e97"
+class API(val historyService: HistoryService, val userService: UserService) extends Controller {
+
+  private val conf: Config  = ConfigFactory.load()
+
+  val YANDEX_API_KEY: String = conf.getString("yandex.key")
 
   val DEFAULT_SECOND_LANGUAGE = "ru"
+
+  val GOOGLE_CLIENT_ID: String = conf.getString("google.clientId")
 
   val yandexApiClient: Service[Request, Response] = Http.client.withTls("translate.yandex.net").newService("translate.yandex.net:443")
 
   val danskOrdbogClient: Service[Request, Response] = Http.client.newService("ordnet.dk:80")
 
+  val jsonFactory = new JacksonFactory()
+
+  val transport: HttpTransport  = new NetHttpTransport()
+
   get("/rest/version") { request: Request =>
-    "0.0.2"
+    "0.0.3"
   }
 
   post("/rest/translate") { request: Request =>
     val text: String = request.getParam("text")
+
+    if (request.containsParam("token")) {
+      val idTokenString = request.getParam("token")
+      val verifier: GoogleIdTokenVerifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+        .setAudience(Collections.singletonList(GOOGLE_CLIENT_ID))
+        .build()
+
+      val idToken: GoogleIdToken = verifier.verify(idTokenString)
+      if (idToken != null) {
+        val payload: Payload  = idToken.getPayload
+
+        val userId: String = payload.getSubject
+
+        userService.getByEmail(payload.getEmail).flatMap(user => {
+          if (user.isDefined) {
+            scala.concurrent.Future {user.get.id}
+          } else {
+            userService.saveUser(new User(payload.getEmail, payload.get("name").toString, 1l))
+          }
+        }).flatMap(id => {
+          historyService.addRecord(id, text, new Date().getTime)
+        }).recover({
+          case error: Throwable => println(error)
+        })
+
+        println(s"User ID: $userId")
+
+        println(s"User email ${payload.getEmail}")
+        println(s"User name ${payload.get("name")}")
+        println(s"Email verified ${payload.getEmailVerified}")
+      } else {
+        println("Invalid ID token.")
+      }
+    }
+
+
     val secondLang: String = request.getParam("lang", DEFAULT_SECOND_LANGUAGE)
     println(s"Request received with query $text")
 

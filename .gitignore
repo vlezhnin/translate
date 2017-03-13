@@ -18,5 +18,7 @@ webapp/.DS_Store
 webapp/.env
 webapp/npm-debug.log
 
+dev.conf
+
 .idea
 

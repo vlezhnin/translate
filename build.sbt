@@ -12,9 +12,14 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
+  "org.scala-lang.modules" % "scala-xml_2.11" % "1.0.5",
   "com.twitter" %% "finatra-http" % "2.2.0",
   "ch.qos.logback" % "logback-classic" % "1.1.7",
-    "net.ruippeixotog" %% "scala-scraper" % "1.2.0"
+  "net.ruippeixotog" %% "scala-scraper" % "1.2.0",
+  "com.google.api-client" % "google-api-client" % "1.22.0",
+  "com.typesafe.slick" %% "slick" % "3.1.1",
+  "org.postgresql" % "postgresql" % "9.4.1212",
+  "com.typesafe" % "config" % "1.3.1"
 )
 
 enablePlugins(JavaAppPackaging)

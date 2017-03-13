@@ -9,6 +9,8 @@ import 'react-materialize'
 ReactDOM.render(<Version />, document.getElementById('version'));
 ReactDOM.render(<LanguageSelect />, document.querySelector('.language-select'));
 
+let loggedInUser;
+
 $(document).ready(function() {
 	let translateResults = $('.translate-results');
 	let translateWordType = $('.translate-word-type');
@@ -16,6 +18,28 @@ $(document).ready(function() {
 	let meanings = $('.meanings');
 	meanings.hide();
 
+	window.onSignIn = function (googleUser) {
+		const profile = googleUser.getBasicProfile();
+		loggedInUser = profile;
+		loggedInUser.idToken = googleUser.getAuthResponse().id_token;
+		console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+		console.log('ID token: ' + googleUser.getAuthResponse().id_token);
+		console.log('Name: ' + profile.getName());
+		console.log('Image URL: ' + profile.getImageUrl());
+		console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+	};
+
+	$('.link-sign-out').click(() => {
+		const auth2 = window.gapi.auth2.getAuthInstance();
+		console.log(auth2);
+		auth2.signOut()
+		.then(function () {
+			console.log('User signed out.');
+		})
+		.finally(() => {
+			loggedInUser = null;
+		});
+	});
 
 	$('#submit').click(() => {
 		translateWordType.empty();
@@ -27,17 +51,23 @@ $(document).ready(function() {
 		const text = $('#text').val();
 		// TODO read properly from app state
 		let secondLanguage = localStorage.getItem('language');
+
+		let searchForm = `text=${text};lang=${secondLanguage}`;
+		if (loggedInUser) {
+			searchForm += `&token=${loggedInUser.idToken}`
+		}
+
 		$.ajax('/rest/translate', {
-			'data': `text=${text};lang=${secondLanguage}`,
+			'data': searchForm,
 			'type': 'POST',
 			'processData': false
 		})
-			.done(function(data) {
-				data.forEach(langResponseString => {
-					let langResponse = JSON.parse(langResponseString);
-					translateResults.append(`<div class="col s6">${langResponse.text[0]}</div>`);
-				});
+		.done(function(data) {
+			data.forEach(langResponseString => {
+				let langResponse = JSON.parse(langResponseString);
+				translateResults.append(`<div class="col s6">${langResponse.text[0]}</div>`);
 			});
+		});
 
 		let separateWordsArea = $('.separate-words');
 		separateWordsArea.empty();
@@ -62,21 +92,22 @@ $(document).ready(function() {
 	});
 
 	function searchOrdnetArticle(word) {
+		let searchForm = 'text='+word;
+		if (loggedInUser) {
+			searchForm += `&token=${loggedInUser.idToken}`
+		}
 		$.ajax('/rest/ordnet', {
-			'data': 'text='+word,
+			'data': searchForm,
 			'type': 'POST',
 			'processData': false
 		})
-		.done(function(data) {
-
-			if (data.options && data.options.length > 1) {
-				data.options.forEach(option => {
-					translateWordType.append(`<div class="chip word-type">
-						<input type="hidden" value="${option.link}">
-						${option.text}
-					</div>`)
-				});
-			}
+		.done(data => {
+			data.options.forEach(option => {
+				translateWordType.append(`<div class="chip word-type">
+					<input type="hidden" value="${option.link}">
+					${option.text}
+				</div>`)
+			});
 
 			$('.word-type').off().click((event) => {
 				article.empty();
@@ -105,8 +136,6 @@ $(document).ready(function() {
 								$('#submit').click();
 							});
 						}
-
-
 					}
 				})
 			});
