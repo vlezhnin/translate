@@ -24,7 +24,7 @@ const Version = React.createClass({
 	render: function() {
 		return (
 			<div className="App">
-				version: {this.state.version}
+				{this.state.version}
 			</div>
 		);
 	}
