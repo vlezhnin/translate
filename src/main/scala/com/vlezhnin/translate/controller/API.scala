@@ -1,5 +1,6 @@
 package com.vlezhnin.translate.controller
 
+import java.net.URLEncoder
 import java.util.{Collections, Date}
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload
@@ -81,8 +82,8 @@ class API(val historyService: HistoryService, val userService: UserService) exte
     val secondLang: String = request.getParam("lang", DEFAULT_SECOND_LANGUAGE)
     println(s"Request received with query $text")
 
-    val yandexRequestEn = Request(com.twitter.finagle.http.Method.Get, s"/api/v1.5/tr.json/translate?key=$YANDEX_API_KEY&lang=da-en&text=$text")
-    val yandexRequestSecond = Request(com.twitter.finagle.http.Method.Get, s"/api/v1.5/tr.json/translate?key=$YANDEX_API_KEY&lang=da-$secondLang&text=$text")
+    val yandexRequestEn = Request(com.twitter.finagle.http.Method.Get, s"/api/v1.5/tr.json/translate?key=$YANDEX_API_KEY&lang=da-en&text=${URLEncoder.encode(text, "UTF-8")}")
+    val yandexRequestSecond = Request(com.twitter.finagle.http.Method.Get, s"/api/v1.5/tr.json/translate?key=$YANDEX_API_KEY&lang=da-$secondLang&text=${URLEncoder.encode(text, "UTF-8")}")
 
     val yandexResponseEn: Future[Response] = yandexApiClient(yandexRequestEn)
     val yandexResponseRu: Future[Response] = yandexApiClient(yandexRequestSecond)
