@@ -1,7 +1,7 @@
 name := "translate"
 
 scalaVersion := "2.11.8"
-
+//
 // Ensure compilation with java 8
 javacOptions ++= Seq("-source", "1.8")
 javacOptions in (Compile, Keys.compile) ++= Seq("-g", "-target", "1.8", "-Xlint")
