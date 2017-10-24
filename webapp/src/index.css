@@ -1,0 +1,37 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  min-width: 364px;
+  overflow: auto;
+}
+
+.btn {
+  height: 30px;
+  line-height: 30px;
+  padding: 0 1rem !important;
+}
+
+nav.search-nav {
+  background-color: #ffffff;
+  color: black;
+}
+
+nav.search-nav, nav.search-nav .nav-wrapper i, nav a.button-collapse, nav a.button-collapse i {
+  height: 40px;
+  line-height: 40px;
+}
+
+.main-nav {
+  background-color: #344bc3;
+  height: 54px;
+  line-height: 54px;
+}
+
+nav.search-nav .input-field label.active i {
+  color: black !important;
+}
+
+.search-nav input[type=search] ~ .material-icons {
+  color: black !important;
+}

@@ -11,5 +11,14 @@ project/boot/
 project/target/
 project/plugins/project/
 
+webapp/node_modules
+webapp/build
+webapp/coverage
+webapp/.DS_Store
+webapp/.env
+webapp/npm-debug.log
+
+dev.conf
+
 .idea
 
